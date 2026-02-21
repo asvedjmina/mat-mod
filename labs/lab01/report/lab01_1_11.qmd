@@ -1,0 +1,208 @@
+---
+## Author
+author:
+  name: Сведжимина А.
+  affiliation:
+    - name: Российский университет дружбы народов
+      country: Российская Федерация
+      city: Москва
+
+## Title
+title: "Лабораторная работа №1. Подготовка стенда. Модель экспоненциального роста"
+subtitle: "Задание 1.11. Математическое моделирование"
+license: "CC BY"
+
+## Override engine to avoid Julia execution
+engine: markdown
+
+## Formats (override project-level for standalone rendering)
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: false
+    toc-depth: 2
+    documentclass: scrreprt
+    papersize: a4
+    fontsize: 12pt
+    linestretch: 1.5
+    babel-lang: russian
+    babel-otherlangs: english
+    csquotes: true
+    indent: true
+    include-in-header:
+      - file: _resources/tex/preamble.tex
+    header-includes:
+      - \usepackage{float}
+---
+
+# Цель работы
+
+Освоить подготовку рабочего стенда для математического моделирования: создание рабочего каталога, настройка проекта DrWatson на языке Julia, реализация модели экспоненциального роста в виде ОДУ, преобразование кода в литературный стиль, генерация производных форматов (чистый код, Jupyter notebook, Quarto-документация), а также проведение параметрического исследования модели.
+
+# Постановка задачи
+
+Согласно заданию 1.11 методического пособия необходимо:
+
+- создать рабочий каталог для курса и рабочее пространство лабораторной работы (проект DrWatson);
+- установить необходимые Julia-пакеты (`DifferentialEquations`, `Plots`, `DataFrames`, `JLD2`, `BenchmarkTools`);
+- реализовать и выполнить скрипт базовой модели экспоненциального роста;
+- преобразовать код в литературный стиль (`.lj`);
+- сгенерировать из литературного кода: чистый `.jl`-скрипт, Jupyter notebook, Quarto-документацию;
+- выполнить Jupyter notebook и интегрировать Quarto-документацию в отчёт;
+- добавить параметрическое исследование (сканирование по $\alpha$);
+- повторить цикл литературного программирования для параметрической версии.
+
+# Краткая теория
+
+Модель экспоненциального роста описывается ОДУ первого порядка:
+$$\frac{du}{dt} = \alpha u, \quad u(0) = u_0.$$
+
+Решение: $u(t) = u_0 e^{\alpha t}$. Параметр $\alpha > 0$ --- константа роста (мальтузианский параметр): при $\alpha > 0$ наблюдается экспоненциальный рост, при $\alpha < 0$ --- затухание. Время удвоения $T_2 = \ln 2 / \alpha$ не зависит от текущего значения $u$. Модель применяется в биологии (рост популяции), финансах (сложный процент), эпидемиологии (начальная фаза распространения инфекции).
+
+# Ход работы
+
+## Подготовка рабочего пространства
+
+Создана структура каталогов по шаблону DrWatson. Итоговая структура проекта:
+
+```
+lab01/
+├── presentation/
+├── project/
+│   ├── Project.toml
+│   ├── Manifest.toml
+│   ├── src/        # Исходный код пакета
+│   ├── data/       # Данные экспериментов
+│   ├── scripts/    # Скрипты (чистые и литературные)
+│   ├── plots/      # Графики
+│   ├── notebooks/  # Jupyter notebooks
+│   ├── markdown/   # Quarto-документация
+│   └── test/       # Тесты
+└── report/
+```
+
+Установлены пакеты: `DifferentialEquations`, `Plots`, `DataFrames`, `JLD2`, `BenchmarkTools`, `Literate`.
+
+## Базовый эксперимент (01\_exponential\_growth)
+
+Реализована функция правой части ОДУ `exponential_growth!(du, u, p, t)`. Параметры по умолчанию: $u_0 = 1.0$, $\alpha = 0.3$, $t \in [0, 10]$. Решение получено методом Tsit5 (Рунге--Кутта 4(5) порядка) с шагом сохранения 0.1. Результаты: график решения, таблица данных, аналитическое время удвоения $T_2 = \ln 2 / 0.3 \approx 2.31$.
+
+Код преобразован в литературный стиль (`scripts/01_exponential_growth.lj`), из которого сгенерированы: чистый скрипт, Jupyter notebook, Quarto-документация. Notebook выполнен, документация интегрирована в отчёт.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.9\linewidth}{\centering \vspace{10mm}
+PLACEHOLDER: График $u(t)$ для базового эксперимента ($\alpha = 0.3$, $u_0 = 1.0$, $t \in [0, 10]$) \\
+(сюда я вставлю скриншот/график позже)
+\vspace{10mm}}}
+\caption{Экспоненциальный рост при $\alpha = 0.3$ (базовый эксперимент)}
+\label{fig:base-exp}
+\end{figure}
+
+На рис. \ref{fig:base-exp} показана динамика популяции $u(t)$ при базовых параметрах.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.9\linewidth}{\centering \vspace{10mm}
+PLACEHOLDER: Таблица с первыми строками результатов базового эксперимента \\
+(значения $t$, $u(t)$, финальная популяция, время удвоения)
+\vspace{10mm}}}
+\caption{Метрики базового эксперимента ($\alpha = 0.3$)}
+\label{fig:base-metrics}
+\end{figure}
+
+## Параметрическое исследование (02\_exponential\_growth)
+
+Программа расширена для параметрического сканирования. Параметры собраны в `Dict`, реализована функция `run_single_experiment`. Сетка параметров: $\alpha \in \{0.1,\; 0.3,\; 0.5,\; 0.8,\; 1.0\}$. Для каждого $\alpha$ вычислены: решение ОДУ, финальная популяция $u(10)$, время удвоения $T_2$. Результаты сохранены через DrWatson (`produce_or_load`). Проведён бенчмаркинг времени вычисления для каждого $\alpha$.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.9\linewidth}{\centering \vspace{10mm}
+PLACEHOLDER: Сравнительный график траекторий $u(t)$ для всех $\alpha \in \{0.1, 0.3, 0.5, 0.8, 1.0\}$ \\
+(сюда я вставлю график позже)
+\vspace{10mm}}}
+\caption{Параметрическое исследование: влияние $\alpha$ на динамику роста}
+\label{fig:param-comparison}
+\end{figure}
+
+На рис. \ref{fig:param-comparison} видно, что с увеличением $\alpha$ кривая роста становится круче.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.9\linewidth}{\centering \vspace{10mm}
+PLACEHOLDER: Сводная таблица результатов по всем $\alpha$ \\
+($\alpha$, финальная популяция $u(10)$, время удвоения $T_2$)
+\vspace{10mm}}}
+\caption{Сводная таблица параметрического сканирования}
+\label{fig:param-table}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.9\linewidth}{\centering \vspace{10mm}
+PLACEHOLDER: График зависимости времени удвоения $T_2$ от $\alpha$ \\
+(точки --- численное решение, штриховая линия --- теория $T_2 = \ln 2 / \alpha$)
+\vspace{10mm}}}
+\caption{Зависимость времени удвоения от параметра $\alpha$}
+\label{fig:doubling-time}
+\end{figure}
+
+На рис. \ref{fig:doubling-time} подтверждается совпадение численного и аналитического результатов.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.9\linewidth}{\centering \vspace{10mm}
+PLACEHOLDER: График зависимости времени вычисления от $\alpha$ (бенчмарк) \\
+(сюда я вставлю график позже)
+\vspace{10mm}}}
+\caption{Зависимость времени вычисления от $\alpha$}
+\label{fig:benchmark}
+\end{figure}
+
+На рис. \ref{fig:benchmark} показано время решения ОДУ при разных $\alpha$.
+
+# Выводы
+
+1. Подготовлен рабочий стенд: создан проект DrWatson с полной структурой каталогов, установлены все необходимые Julia-пакеты.
+2. Реализована модель экспоненциального роста $du/dt = \alpha u$ с использованием пакета `DifferentialEquations.jl` (метод Tsit5).
+3. Код преобразован в литературный стиль с помощью пакета `Literate.jl`; из него сгенерированы чистый скрипт, Jupyter notebook и Quarto-документация.
+4. Проведено параметрическое сканирование по $\alpha \in \{0.1, 0.3, 0.5, 0.8, 1.0\}$: подтверждена обратная зависимость $T_2 = \ln 2 / \alpha$; численные результаты совпадают с аналитическим решением.
+5. Организовано автоматическое сохранение и кэширование результатов через `DrWatson.produce_or_load`.
+6. Все артефакты (графики, данные, ноутбуки) структурированы по каталогам проекта.
+
+# Приложение: ключевые фрагменты кода {.unnumbered}
+
+## Определение модели и решение ОДУ
+
+```julia
+function exponential_growth!(du, u, p, t)
+    α = p
+    du[1] = α * u[1]
+end
+
+u0 = [1.0]             # начальная популяция
+α = 0.3                 # скорость роста
+tspan = (0.0, 10.0)     # временной интервал
+prob = ODEProblem(exponential_growth!, u0, tspan, α)
+sol = solve(prob, Tsit5(), saveat=0.1)
+```
+
+## Параметрическое сканирование
+
+```julia
+param_grid = Dict(
+    :u0 => [[1.0]],
+    :α  => [0.1, 0.3, 0.5, 0.8, 1.0],
+    :tspan => [(0.0, 10.0)],
+    :solver => [Tsit5()],
+    :saveat => [0.1]
+)
+all_params = dict_list(param_grid)
+for params in all_params
+    data, path = produce_or_load(
+        datadir(script_name, "parametric_scan"),
+        params, run_single_experiment
+    )
+end
+```
