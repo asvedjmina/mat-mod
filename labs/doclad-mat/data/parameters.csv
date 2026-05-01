@@ -1,0 +1,8 @@
+parameter,value
+skill,0.7
+luck_distribution,Normal(0,1)
+alphas,"0.2,0.5,0.8"
+attempts,200
+comparison_skill_a,0.82
+comparison_skill_b,0.58
+comparison_alpha,0.6

@@ -1,0 +1,43 @@
+project:
+  title: "report"
+  output-dir: "_output"
+
+standalone: true
+self-contained: true
+
+lang: ru-RU
+number-sections: true
+toc: true
+toc-title: "Содержание"
+toc-depth: 2
+
+crossref:
+  lof-title: "Список иллюстраций"
+  lot-title: "Список таблиц"
+  lol-title: "Листинги"
+
+bibliography:
+  - bib/cite.bib
+csl: _resources/csl/gost-r-7-0-5-2008-numeric.csl
+
+format:
+  docx:
+    toc: true
+    number-sections: true
+    toc-depth: 2
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: false
+    toc-depth: 2
+    lof: true
+    lot: true
+    documentclass: scrreprt
+    papersize: a4
+    fontsize: 12pt
+    linestretch: 1.5
+    babel-lang: russian
+    babel-otherlangs: english
+    indent: true
+    include-in-header:
+      - file: _resources/tex/preamble.tex
